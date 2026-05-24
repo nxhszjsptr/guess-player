@@ -712,9 +712,9 @@
                 <th>球队</th>
                 <th>位置</th>
                 <th>身高</th>
-                <th>经验</th>
+                <th>选秀年份</th>
                 <th>国家</th>
-                <th>选秀</th>
+                <th>选秀顺位</th>
               </tr>
             </thead>
             <tbody id="boardBody"></tbody>
@@ -1179,9 +1179,9 @@
         <th>球队</th>
         <th>位置</th>
         <th>身高</th>
-        <th>经验</th>
+        <th>选秀年份</th>
         <th>国家</th>
-        <th>选秀</th>
+        <th>选秀顺位</th>
       `;
       rows.forEach(player => {
         const tr = document.createElement("tr");
@@ -1191,9 +1191,9 @@
           ${tile(teamCheck(player), player.team)}
           ${tile(positionCheck(player), player.posFine)}
           ${tile(numberCheck(player.heightCm, state.answer.heightCm), `${player.heightCm}cm`)}
-          ${tile(numberCheck(player.exp, state.answer.exp), `${player.exp} 年`)}
+          ${tile(draftYearCheck(player), draftYearLabel(player))}
           ${tile(countryCheck(player), player.country)}
-          ${tile(draftCheck(player), draftLabel(player))}
+          ${tile(draftPickCheck(player), draftPickLabel(player))}
         `;
         frag.appendChild(tr);
       });
@@ -1257,14 +1257,16 @@
       return guessed && guessed === answer ? close(guessed) : wrong();
     }
 
-    function draftCheck(player) {
+    function draftYearCheck(player) {
       if (!player.draftYear && !state.answer.draftYear) return exact();
-      if (player.draftPickValue === state.answer.draftPickValue) return exact();
-      if (player.draftYear === state.answer.draftYear) return close("同届");
-      if (Math.abs(player.draftPickValue - state.answer.draftPickValue) <= 10) {
-        return close(player.draftPickValue < state.answer.draftPickValue ? "顺位更低" : "顺位更高");
-      }
-      return wrong(player.draftPickValue < state.answer.draftPickValue ? "顺位更低" : "顺位更高");
+      if (!player.draftYear || !state.answer.draftYear) return wrong();
+      return numberCheck(player.draftYear, state.answer.draftYear);
+    }
+
+    function draftPickCheck(player) {
+      if (!player.draftYear && !state.answer.draftYear) return exact();
+      if (!player.draftPick || !state.answer.draftPick) return wrong();
+      return numberCheck(player.draftPickValue, state.answer.draftPickValue);
     }
 
     function numberCheck(value, target) {
@@ -1308,6 +1310,14 @@
       return `${player.draftYear} #${player.draftPick || "--"}`;
     }
 
+    function draftYearLabel(player) {
+      return player.draftYear || "落选秀";
+    }
+
+    function draftPickLabel(player) {
+      return player.draftPick ? `#${player.draftPick}` : "落选秀";
+    }
+
     function countryRegion(country) {
       if (!country) return "";
       if (COUNTRY_REGION[country]) return COUNTRY_REGION[country];
@@ -1323,8 +1333,8 @@
           const cells = [
             teamCheck(player), positionCheck(player),
             numberCheck(player.heightCm, state.answer.heightCm),
-            numberCheck(player.exp, state.answer.exp),
-            countryCheck(player), draftCheck(player)
+            draftYearCheck(player),
+            countryCheck(player), draftPickCheck(player)
           ];
           return cells.map(cell => cell.className === "green" ? "G" : cell.className === "yellow" ? "Y" : "R").join("");
         }).join("\n");
