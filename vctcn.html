@@ -732,7 +732,7 @@
     function getSuggestionMatches(value) {
       const query = normalizeText(value);
       const pool = state.players.filter(player => !state.guesses.some(guess => guess.id === player.id));
-      if (!query) return pool.slice(0, MAX_SUGGESTIONS);
+      if (!query) return [];
       return pool
         .map(player => ({ player, score: matchScore(player, query) }))
         .filter(item => item.score > 0)
