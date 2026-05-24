@@ -748,6 +748,7 @@
     }
 
     function matchScore(player, query) {
+      if (player.id === "taojibo" && !query.startsWith("tao") && !query.startsWith("陶")) return 0;
       if (player.aliases === query) return 100;
       if (player.aliases.startsWith(query)) return 80;
       if (player.aliases.includes(query)) return 50;
