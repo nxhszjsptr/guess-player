@@ -603,7 +603,7 @@
     function init() {
       state.players = JSON.parse(document.getElementById("players-data").textContent)
         .map(normalizePlayer)
-        .sort((a, b) => a.name.localeCompare(b.name));
+        .sort(sortPlayers);
       els.poolStat.textContent = state.players.length;
       bindEvents();
       startNewRound();
@@ -658,6 +658,12 @@
         ...player,
         aliases: normalizeText(`${player.name} ${player.cn} ${player.team} ${player.id === "taojibo" ? "taojibo tao ji bo" : ""}`)
       };
+    }
+
+    function sortPlayers(a, b) {
+      if (a.id === "taojibo" && b.id !== "taojibo") return 1;
+      if (b.id === "taojibo" && a.id !== "taojibo") return -1;
+      return a.name.localeCompare(b.name);
     }
 
     function startNewRound() {
@@ -736,7 +742,7 @@
       return pool
         .map(player => ({ player, score: matchScore(player, query) }))
         .filter(item => item.score > 0)
-        .sort((a, b) => b.score - a.score || a.player.name.localeCompare(b.player.name))
+        .sort((a, b) => b.score - a.score || sortPlayers(a.player, b.player))
         .slice(0, MAX_SUGGESTIONS)
         .map(item => item.player);
     }
